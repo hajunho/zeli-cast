@@ -45,6 +45,7 @@ export async function fetchOpenMeteo(lat, lon) {
       data: normalize(json),
     };
   } catch (err) {
+    console.error(`[Open-Meteo] ❌ ${err.code || ''} ${err.message}`);
     return {
       name: 'Open-Meteo',
       status: 'error',
