@@ -2,12 +2,13 @@
  * ZeliCastModal — 합의 기반 날씨 예보 모달
  * 5개 기상 API 합의 결과를 zeliai 스타일로 표시
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './ZeliCast.css';
 
 const API_BASE = '/api/cast';
 const DEFAULT_LOCATION = { lat: 37.5665, lon: 126.9780, name: '서울특별시', detail: '중구' };
 const SOURCES = ['Open-Meteo', 'OpenWeatherMap', 'WeatherAPI', '기상청', 'Tomorrow.io'];
+const GEO_TIMEOUT = 8000; // 모바일에서 GPS 잡는데 넉넉하게
 
 function getConfidenceLevel(confidence) {
   if (confidence >= 5) return '5';
@@ -17,15 +18,54 @@ function getConfidenceLevel(confidence) {
   return '1';
 }
 
+/**
+ * 🌍 GPS 위치 획득 (웹 + 모바일 공통)
+ * - 성공: { lat, lon } 반환
+ * - 실패/거부/미지원: null 반환 (서울 fallback)
+ */
+function getUserGPS() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      console.warn('[ZeliCast] Geolocation API 미지원');
+      return resolve(null);
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      (err) => { console.warn('[ZeliCast] GPS 거부/오류:', err.message); resolve(null); },
+      { enableHighAccuracy: true, timeout: GEO_TIMEOUT, maximumAge: 60000 }
+    );
+  });
+}
+
+/**
+ * 🗺️ 역지오코딩 (좌표 → 도시 이름)
+ * OpenStreetMap Nominatim (무료, 키 불필요, 모바일 호환)
+ */
+async function reverseGeocode(lat, lon) {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=ko`,
+      { headers: { 'User-Agent': 'ZeliCast/1.0' } }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const addr = data.address || {};
+    const name = addr.city || addr.town || addr.county || addr.state || data.display_name?.split(',')[0] || '';
+    const detail = addr.suburb || addr.neighbourhood || addr.district || addr.borough || '';
+    return { name, detail };
+  } catch { return null; }
+}
+
 export default function ZeliCastModal({ isOpen, onClose }) {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [location] = useState(DEFAULT_LOCATION);
+  const [location, setLocation] = useState(DEFAULT_LOCATION);
+  const [gpsStatus, setGpsStatus] = useState('pending'); // pending | granted | denied
   const [loadedSources, setLoadedSources] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
 
-  const fetchWeather = async (loc) => {
+  const fetchWeather = useCallback(async (loc) => {
     setLoading(true);
     setError(null);
     setLoadedSources([]);
@@ -52,20 +92,49 @@ export default function ZeliCastModal({ isOpen, onClose }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
+  // 모달 열릴 때: GPS → 역지오코딩 → 날씨 fetch
   useEffect(() => {
-    if (isOpen) {
-      fetchWeather(location);
-    }
+    if (!isOpen) return;
+
+    let cancelled = false;
+
+    (async () => {
+      setGpsStatus('pending');
+      const gps = await getUserGPS();
+
+      if (cancelled) return;
+
+      if (gps) {
+        setGpsStatus('granted');
+        const loc = { ...DEFAULT_LOCATION, lat: gps.lat, lon: gps.lon };
+
+        // 역지오코딩 (논블로킹 — 날씨 fetch와 병렬)
+        reverseGeocode(gps.lat, gps.lon).then((geo) => {
+          if (!cancelled && geo?.name) {
+            setLocation(prev => ({ ...prev, name: geo.name, detail: geo.detail || '' }));
+          }
+        });
+
+        setLocation(loc);
+        fetchWeather(loc);
+      } else {
+        setGpsStatus('denied');
+        setLocation(DEFAULT_LOCATION);
+        fetchWeather(DEFAULT_LOCATION);
+      }
+    })();
+
     return () => {
+      cancelled = true;
       setWeather(null);
       setLoading(true);
       setError(null);
       setLoadedSources([]);
       setSelectedDay(null);
     };
-  }, [isOpen]);
+  }, [isOpen, fetchWeather]);
 
   if (!isOpen) return null;
 
@@ -86,7 +155,7 @@ export default function ZeliCastModal({ isOpen, onClose }) {
 
           {!loading && !error && weather && (
             <>
-              <LocationBar location={location} />
+              <LocationBar location={location} gpsStatus={gpsStatus} />
               <div className="zc-fade-in">
                 <WeatherHero current={weather.current} />
               </div>
@@ -126,15 +195,24 @@ function ZCHeader() {
   );
 }
 
-function LocationBar({ location }) {
+function LocationBar({ location, gpsStatus }) {
   return (
     <div className="zc-location-bar">
       <span className="zc-location-icon"><i className="fas fa-map-marker-alt" /></span>
       <div className="zc-location-text">
         <div className="zc-location-name">{location.name}</div>
-        <div className="zc-location-detail">{location.detail}</div>
+        <div className="zc-location-detail">
+          {location.detail}
+          {gpsStatus === 'granted' && (
+            <span style={{ marginLeft: '6px', color: '#22c55e', fontSize: '0.7rem' }}>
+              <i className="fas fa-crosshairs" style={{ marginRight: '3px' }} />GPS
+            </span>
+          )}
+          {gpsStatus === 'denied' && (
+            <span style={{ marginLeft: '6px', color: '#6b7280', fontSize: '0.65rem' }}>기본 위치</span>
+          )}
+        </div>
       </div>
-      <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>▼</span>
     </div>
   );
 }
