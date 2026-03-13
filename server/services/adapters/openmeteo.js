@@ -2,11 +2,26 @@
  * Open-Meteo Adapter — REAL API (no key required)
  * https://open-meteo.com/
  */
-// Node 18+ 내장 fetch 사용, 미지원 시 node-fetch fallback
-const _fetch = globalThis.fetch || (await import('node-fetch')).default;
+import https from 'https';
 import { wmoCodeToCondition } from '../conditions.js';
 
 const BASE_URL = 'https://api.open-meteo.com/v1/forecast';
+
+/** Node.js https.get wrapper → Promise<JSON> */
+function httpsGetJson(url, timeoutMs = 8000) {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, (res) => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); }
+        catch (e) { reject(new Error('Invalid JSON response')); }
+      });
+    });
+    req.on('error', reject);
+    req.setTimeout(timeoutMs, () => { req.destroy(); reject(new Error('Timeout')); });
+  });
+}
 
 export async function fetchOpenMeteo(lat, lon) {
   const start = Date.now();
@@ -21,13 +36,7 @@ export async function fetchOpenMeteo(lat, lon) {
       forecast_days: 7,
     });
 
-    // AbortController for timeout (AbortSignal.timeout은 Node 일부 버전에서 불안정)
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-
-    const res = await _fetch(`${BASE_URL}?${params}`, { signal: controller.signal });
-    clearTimeout(timer);
-    const json = await res.json();
+    const json = await httpsGetJson(`${BASE_URL}?${params}`);
 
     return {
       name: 'Open-Meteo',
