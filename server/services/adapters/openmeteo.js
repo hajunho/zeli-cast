@@ -7,10 +7,16 @@ import { wmoCodeToCondition } from '../conditions.js';
 
 const BASE_URL = 'https://api.open-meteo.com/v1/forecast';
 
-/** Node.js https.get wrapper → Promise<JSON> */
+/** Node.js https.get wrapper → Promise<JSON> (IPv4 강제 — AWS EC2 IPv6 이슈 방지) */
 function httpsGetJson(url, timeoutMs = 8000) {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, (res) => {
+    const parsed = new URL(url);
+    const options = {
+      hostname: parsed.hostname,
+      path: parsed.pathname + parsed.search,
+      family: 4,  // ← IPv4 강제 (EC2 IPv6 차단 대응)
+    };
+    const req = https.get(options, (res) => {
       let data = '';
       res.on('data', chunk => { data += chunk; });
       res.on('end', () => {
