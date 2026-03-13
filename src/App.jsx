@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import KoreaMapModal from './KoreaMap'
 
 const API_BASE = '/api';
 
@@ -15,6 +16,7 @@ function App() {
   const [location, setLocation] = useState(DEFAULT_LOCATION);
   const [loadedSources, setLoadedSources] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [showMap, setShowMap] = useState(false);
 
   const fetchWeather = async (loc) => {
     setLoading(true);
@@ -47,18 +49,34 @@ function App() {
     }
   };
 
+  const handleRegionSelect = (region) => {
+    setLocation(region);
+    setShowMap(false);
+    fetchWeather(region);
+  };
+
   useEffect(() => {
     fetchWeather(location);
   }, []);
 
   const handleRefresh = () => fetchWeather(location);
 
+  const mapModal = showMap && (
+    <KoreaMapModal
+      onSelectRegion={handleRegionSelect}
+      currentLocationName={location.name}
+      onClose={() => setShowMap(false)}
+    />
+  );
+
   if (loading) {
     return (
       <div className="app">
         <div className="app-container">
           <Header />
+          <LocationBar location={location} onClick={() => setShowMap(true)} />
           <LoadingState loadedSources={loadedSources} />
+          {mapModal}
         </div>
       </div>
     );
@@ -69,7 +87,9 @@ function App() {
       <div className="app">
         <div className="app-container">
           <Header />
+          <LocationBar location={location} onClick={() => setShowMap(true)} />
           <ErrorState message={error} onRetry={handleRefresh} />
+          {mapModal}
         </div>
       </div>
     );
@@ -79,7 +99,7 @@ function App() {
     <div className="app">
       <div className="app-container">
         <Header />
-        <LocationBar location={location} />
+        <LocationBar location={location} onClick={() => setShowMap(true)} />
 
         <div className="fade-in">
           <WeatherHero current={weather.current} />
@@ -115,6 +135,8 @@ function App() {
             onClose={() => setSelectedDay(null)}
           />
         )}
+
+        {mapModal}
       </div>
     </div>
   );
@@ -135,9 +157,9 @@ function Header() {
 }
 
 /* ═══════ Location Bar ═══════ */
-function LocationBar({ location }) {
+function LocationBar({ location, onClick }) {
   return (
-    <div className="location-bar" id="location-bar">
+    <div className="location-bar" id="location-bar" onClick={onClick}>
       <span className="location-icon">📍</span>
       <div className="location-text">
         <div className="location-name">{location.name}</div>
