@@ -44,9 +44,13 @@ function perturbPercent(ref, range = 15) {
 
 /**
  * Generate simulated data based on a reference forecast (from Open-Meteo)
+ * If reference is null (Open-Meteo failed), generate standalone data
  */
 function generateMockFromReference(reference, sourceName, agreeChance = 0.7) {
-  if (!reference) return null;
+  // Open-Meteo 실패 시 — 독립적으로 데이터 생성
+  if (!reference) {
+    reference = generateFallbackData();
+  }
 
   const current = reference.current ? {
     condition: perturbCondition(reference.current.condition, agreeChance),
@@ -114,3 +118,53 @@ export const fetchOpenWeatherMap = createMockAdapter('OpenWeatherMap', 0.75);
 export const fetchWeatherAPI = createMockAdapter('WeatherAPI', 0.70);
 export const fetchKMA = createMockAdapter('기상청', 0.80);  // Korean Met Agency - higher accuracy for Korea
 export const fetchTomorrow = createMockAdapter('Tomorrow.io', 0.65);
+
+/**
+ * Open-Meteo 없이도 합리적인 날씨 데이터 생성 (fallback)
+ */
+function generateFallbackData() {
+  const now = new Date();
+  const month = now.getMonth(); // 0-11
+  // 서울 기준 월별 평균 기온 (대략)
+  const avgTemps = [-2, 0, 5, 12, 18, 23, 26, 27, 22, 15, 7, 0];
+  const baseTemp = avgTemps[month] ?? 15;
+  const conditions = ['CLEAR', 'PARTLY_CLOUDY', 'CLOUDY'];
+  const condition = conditions[Math.floor(Math.random() * conditions.length)];
+
+  const current = {
+    condition,
+    temp: baseTemp + (Math.random() * 6 - 3),
+    feels_like: baseTemp + (Math.random() * 4 - 4),
+    humidity: 40 + Math.random() * 30,
+    wind_speed: 2 + Math.random() * 8,
+    precipitation_prob: Math.round(Math.random() * 30),
+  };
+
+  const hourly = [];
+  for (let i = 0; i < 24; i++) {
+    const hour = new Date(now.getTime() + i * 3600000);
+    hourly.push({
+      time: hour.toISOString(),
+      condition: conditions[Math.floor(Math.random() * conditions.length)],
+      temp: baseTemp + (Math.random() * 8 - 4) - (i > 12 ? 3 : 0),
+      precipitation_prob: Math.round(Math.random() * 25),
+      wind_speed: 2 + Math.random() * 8,
+    });
+  }
+
+  const daily = [];
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now.getTime() + i * 86400000);
+    daily.push({
+      date: d.toISOString().split('T')[0],
+      condition: conditions[Math.floor(Math.random() * conditions.length)],
+      temp_min: baseTemp - 3 + (Math.random() * 2),
+      temp_max: baseTemp + 3 + (Math.random() * 2),
+      precipitation_prob: Math.round(Math.random() * 30),
+      wind_speed: 2 + Math.random() * 8,
+    });
+  }
+
+  return { current, hourly, daily };
+}
