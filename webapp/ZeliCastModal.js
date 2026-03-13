@@ -340,7 +340,11 @@ function DailyForecast({ daily, onSelectDay }) {
               <div className="zc-daily-precip">
                 {d.precipitation_prob > 0 ? <><i className="fas fa-tint" style={{ marginRight: '2px' }} />{d.precipitation_prob}%</> : ''}
               </div>
-              <div className="zc-daily-confidence">
+              <div
+                className="zc-daily-confidence zc-tooltip-wrap"
+                data-tooltip={`합의 신뢰도 ${d.confidence}/5`}
+                title={`합의 신뢰도 ${d.confidence}/5`}
+              >
                 {[1, 2, 3, 4, 5].map(j => (
                   <div key={j} className={`zc-daily-confidence-dot ${j <= d.confidence ? 'zc-active' : ''}`} />
                 ))}

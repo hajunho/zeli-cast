@@ -490,6 +490,38 @@
   background: #f59e0b;
 }
 
+/* ═══════ Tooltip (hover → 합의 신뢰도 N/5) ═══════ */
+.zc-tooltip-wrap {
+  position: relative;
+  cursor: help;
+}
+
+.zc-tooltip-wrap::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  background: rgba(10, 10, 10, 0.92);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  backdrop-filter: blur(12px);
+  padding: 6px 12px;
+  border-radius: 8px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+}
+
+.zc-tooltip-wrap:hover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 /* ═══════ Source Votes Panel ═══════ */
 .zc-votes-panel {
   background: rgba(255, 255, 255, 0.03);
