@@ -5,7 +5,7 @@ import { getConsensus } from './services/consensus.js';
 import { getCached, setCache } from './services/cache.js';
 
 const app = express();
-const PORT = 3001;
+const PORT = 5171;
 
 app.use(cors());
 app.use(express.json());
