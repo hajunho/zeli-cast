@@ -25,9 +25,9 @@ export function getConsensus(allForecasts) {
  * Build consensus for current weather
  */
 function buildCurrentConsensus(sources) {
-  const currentData = sources
-    .map(s => s.data?.current)
-    .filter(Boolean);
+  // 각 소스별 current 데이터 추적
+  const sourceData = sources.map(s => s.data?.current || null);
+  const currentData = sourceData.filter(Boolean);
 
   if (currentData.length === 0) {
     return { condition: 'CLEAR', confidence: 0, temp: 0, humidity: 0, wind_speed: 0 };
@@ -54,40 +54,55 @@ function buildCurrentConsensus(sources) {
     humidity: Math.round(median(humidities)),
     wind_speed: round1(median(winds)),
     precipitation_prob: precips.length > 0 ? Math.round(median(precips)) : null,
-    votes: buildVoteDetail(conditionVotes, sources),
+    votes: buildVoteDetail(sourceData, sources, winner),
   };
 }
 
 /**
  * Build consensus for hourly forecast
+ * 각 소스의 시간 포맷이 다를 수 있으므로 KST 시(hour) 기준으로 그룹핑
  */
 function buildHourlyConsensus(sources) {
   const allHourly = sources.map(s => s.data?.hourly || []);
   if (allHourly.every(h => h.length === 0)) return [];
 
-  // Find common hours across sources (next 24 hours)
-  const hoursSet = new Set();
+  // 모든 시간을 KST hour 키로 정규화 (YYYY-MM-DDTHH)
+  function toHourKey(timeStr) {
+    const d = new Date(timeStr);
+    // KST = UTC+9
+    const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+    const y = kst.getUTCFullYear();
+    const m = String(kst.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(kst.getUTCDate()).padStart(2, '0');
+    const hh = String(kst.getUTCHours()).padStart(2, '0');
+    return `${y}-${m}-${dd}T${hh}`;
+  }
+
+  // Group by hour key
+  const hourMap = {};
   allHourly.forEach(hourList => {
-    hourList.forEach(h => hoursSet.add(h.time));
+    hourList.forEach(h => {
+      const key = toHourKey(h.time);
+      if (!hourMap[key]) hourMap[key] = [];
+      hourMap[key].push(h);
+    });
   });
 
-  const sortedHours = Array.from(hoursSet).sort().slice(0, 24);
+  const sortedKeys = Object.keys(hourMap).sort().slice(0, 24);
 
-  return sortedHours.map(time => {
-    const dataForHour = allHourly
-      .map(hourList => hourList.find(h => h.time === time))
-      .filter(Boolean);
-
+  return sortedKeys.map(key => {
+    const dataForHour = hourMap[key];
     if (dataForHour.length === 0) return null;
 
     const conditionVotes = dataForHour.map(d => d.condition);
     const { winner, count, total } = majorityVote(conditionVotes);
 
     const agreedData = dataForHour.filter(d => d.condition === winner);
+    const hour = parseInt(key.split('T')[1]);
 
     return {
-      time,
-      hour: new Date(time).getHours(),
+      time: key + ':00',
+      hour,
       condition: winner,
       condition_icon: CONDITION_ICONS[winner] || '🌡️',
       condition_label: CONDITION_LABELS[winner] || winner,
@@ -114,10 +129,13 @@ function buildDailyConsensus(sources) {
   const sortedDates = Array.from(datesSet).sort().slice(0, 7);
 
   return sortedDates.map(date => {
-    const dataForDay = allDaily
-      .map(dayList => dayList.find(d => d.date === date))
-      .filter(Boolean);
+    // 각 소스별로 해당 날짜 데이터 확인 (데이터 없는 소스도 추적)
+    const sourceData = sources.map(s => {
+      const daily = s.data?.daily || [];
+      return daily.find(d => d.date === date) || null;
+    });
 
+    const dataForDay = sourceData.filter(Boolean);
     if (dataForDay.length === 0) return null;
 
     const conditionVotes = dataForDay.map(d => d.condition);
@@ -139,7 +157,7 @@ function buildDailyConsensus(sources) {
       temp_min: round1(median(allTempsMin)),
       temp_max: round1(median(allTempsMax)),
       precipitation_prob: allPrecips.length > 0 ? Math.round(median(allPrecips)) : null,
-      votes: buildVoteDetail(conditionVotes, sources),
+      votes: buildVoteDetail(sourceData, sources, winner),
     };
   }).filter(Boolean);
 }
@@ -167,15 +185,30 @@ function majorityVote(votes) {
 
 /**
  * Build vote detail for transparency
+ * sourceData: 각 소스별 해당 날짜/시간의 데이터 (없으면 null)
  */
-function buildVoteDetail(conditionVotes, sources) {
-  return sources.map((source, i) => ({
-    name: source.name,
-    condition: conditionVotes[i],
-    condition_icon: CONDITION_ICONS[conditionVotes[i]] || '🌡️',
-    condition_label: CONDITION_LABELS[conditionVotes[i]] || conditionVotes[i],
-    agreed: conditionVotes[i] === majorityVote(conditionVotes).winner,
-  }));
+function buildVoteDetail(sourceData, sources, winner) {
+  return sources.map((source, i) => {
+    const data = sourceData[i];
+    if (!data) {
+      return {
+        name: source.name,
+        condition: null,
+        condition_icon: '—',
+        condition_label: '데이터 없음',
+        agreed: false,
+        noData: true,
+      };
+    }
+    return {
+      name: source.name,
+      condition: data.condition,
+      condition_icon: CONDITION_ICONS[data.condition] || '🌡️',
+      condition_label: CONDITION_LABELS[data.condition] || data.condition,
+      agreed: data.condition === winner,
+      noData: false,
+    };
+  });
 }
 
 /**

@@ -380,24 +380,35 @@ function DailyForecast({ daily, onSelectDay }) {
 
 function SourceVotes({ votes, title }) {
   if (!votes || votes.length === 0) return null;
+  const dataCount = votes.filter(v => !v.noData).length;
+  const totalCount = votes.length;
   return (
     <div className="zc-section">
       <div className="zc-section-header">
         <span className="zc-section-title"><i className="fas fa-vote-yea" style={{ marginRight: '6px' }} />{title}</span>
+        {dataCount < totalCount && (
+          <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>{dataCount}/{totalCount} 소스 응답</span>
+        )}
       </div>
       <div className="zc-votes-panel">
         {votes.map((v, i) => (
-          <div key={i} className="zc-vote-row">
-            <div className={`zc-vote-status ${v.agreed ? 'zc-agreed' : 'zc-dissent'}`}>
-              {v.agreed ? <i className="fas fa-check" /> : <i className="fas fa-times" />}
+          <div key={i} className={`zc-vote-row ${v.noData ? 'zc-vote-nodata' : ''}`}>
+            <div className={`zc-vote-status ${v.noData ? 'zc-nodata' : v.agreed ? 'zc-agreed' : 'zc-dissent'}`}>
+              {v.noData ? <i className="fas fa-minus" /> : v.agreed ? <i className="fas fa-check" /> : <i className="fas fa-times" />}
             </div>
             <div className="zc-vote-source">{v.name}</div>
             <div className="zc-vote-condition">
-              <span><ConditionIcon condition={v.condition} /></span>
-              <span>{v.condition_label}</span>
+              {v.noData ? (
+                <span style={{ color: '#6b7280', fontStyle: 'italic', fontSize: '0.75rem' }}>예보 기간 초과</span>
+              ) : (
+                <>
+                  <span><ConditionIcon condition={v.condition} /></span>
+                  <span>{v.condition_label}</span>
+                </>
+              )}
             </div>
-            <span className={`zc-vote-tag ${v.agreed ? 'zc-majority' : 'zc-minority'}`}>
-              {v.agreed ? '합의' : '소수'}
+            <span className={`zc-vote-tag ${v.noData ? 'zc-no-vote' : v.agreed ? 'zc-majority' : 'zc-minority'}`}>
+              {v.noData ? '—' : v.agreed ? '합의' : '소수'}
             </span>
           </div>
         ))}
@@ -409,6 +420,7 @@ function SourceVotes({ votes, title }) {
 function DayDetailModal({ day, onClose }) {
   const scoreColor = day.confidence >= 4 ? '#22c55e' :
     day.confidence >= 3 ? '#f59e0b' : '#ef4444';
+  const noDataCount = day.votes ? day.votes.filter(v => v.noData).length : 0;
   return (
     <div className="zc-day-modal-overlay" onClick={onClose}>
       <div className="zc-day-modal-content" onClick={e => e.stopPropagation()}>
@@ -428,6 +440,12 @@ function DayDetailModal({ day, onClose }) {
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <ConfidenceBadge confidence={day.confidence} total={day.confidence_total} scoreColor={scoreColor} />
         </div>
+        {noDataCount > 0 && (
+          <div style={{ textAlign: 'center', fontSize: '0.7rem', color: '#9ca3af', marginTop: '8px', padding: '0 16px' }}>
+            <i className="fas fa-info-circle" style={{ marginRight: '4px' }} />
+            {noDataCount}개 소스는 이 날짜의 예보를 제공하지 않습니다 (무료 티어 예보 기간 초과)
+          </div>
+        )}
         {day.votes && (
           <div style={{ marginTop: '20px' }}>
             <SourceVotes votes={day.votes} title="API별 예보" />

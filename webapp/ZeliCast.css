@@ -600,6 +600,21 @@
   color: #f87171;
 }
 
+.zc-vote-tag.zc-no-vote {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+}
+
+.zc-vote-row.zc-vote-nodata {
+  opacity: 0.45;
+}
+
+.zc-vote-status.zc-nodata {
+  background: rgba(107, 114, 128, 0.15);
+  border: 1px solid rgba(107, 114, 128, 0.3);
+  color: #6b7280;
+}
+
 /* ═══════ Loading State ═══════ */
 .zc-loading-container {
   display: flex;
