@@ -2,32 +2,10 @@
  * Open-Meteo Adapter — REAL API (no key required)
  * https://open-meteo.com/
  */
-import https from 'https';
+import { httpsGetJson } from './httpUtil.js';
 import { wmoCodeToCondition } from '../conditions.js';
 
 const BASE_URL = 'https://api.open-meteo.com/v1/forecast';
-
-/** Node.js https.get wrapper → Promise<JSON> (IPv4 강제 — AWS EC2 IPv6 이슈 방지) */
-function httpsGetJson(url, timeoutMs = 8000) {
-  return new Promise((resolve, reject) => {
-    const parsed = new URL(url);
-    const options = {
-      hostname: parsed.hostname,
-      path: parsed.pathname + parsed.search,
-      family: 4,  // ← IPv4 강제 (EC2 IPv6 차단 대응)
-    };
-    const req = https.get(options, (res) => {
-      let data = '';
-      res.on('data', chunk => { data += chunk; });
-      res.on('end', () => {
-        try { resolve(JSON.parse(data)); }
-        catch (e) { reject(new Error('Invalid JSON response')); }
-      });
-    });
-    req.on('error', reject);
-    req.setTimeout(timeoutMs, () => { req.destroy(); reject(new Error('Timeout')); });
-  });
-}
 
 export async function fetchOpenMeteo(lat, lon) {
   const start = Date.now();
