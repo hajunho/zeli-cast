@@ -10,6 +10,23 @@ const DEFAULT_LOCATION = { lat: 37.5665, lon: 126.9780, name: '서울특별시',
 const SOURCES = ['Open-Meteo', 'OpenWeatherMap', 'WeatherAPI', '기상청', 'Tomorrow.io'];
 const GEO_TIMEOUT = 8000; // 모바일에서 GPS 잡는데 넉넉하게
 
+// 날씨 condition → FontAwesome 아이콘 (이모지 대신 — 서버 UTF-8 인코딩 문제 해결)
+const CONDITION_FA = {
+  CLEAR:         { icon: 'fas fa-sun',             color: '#fbbf24' },
+  PARTLY_CLOUDY: { icon: 'fas fa-cloud-sun',       color: '#94a3b8' },
+  CLOUDY:        { icon: 'fas fa-cloud',           color: '#9ca3af' },
+  RAIN:          { icon: 'fas fa-cloud-rain',      color: '#60a5fa' },
+  HEAVY_RAIN:    { icon: 'fas fa-cloud-showers-heavy', color: '#3b82f6' },
+  SNOW:          { icon: 'fas fa-snowflake',       color: '#e2e8f0' },
+  SLEET:         { icon: 'fas fa-cloud-meatball',  color: '#93c5fd' },
+  FOG:           { icon: 'fas fa-smog',            color: '#6b7280' },
+};
+
+function ConditionIcon({ condition, size = '1em' }) {
+  const fa = CONDITION_FA[condition] || CONDITION_FA.CLOUDY;
+  return <i className={fa.icon} style={{ fontSize: size, color: fa.color }} />;
+}
+
 function getConfidenceLevel(confidence) {
   if (confidence >= 5) return '5';
   if (confidence >= 4) return '4';
@@ -225,7 +242,7 @@ function WeatherHero({ current }) {
 
   return (
     <div className="zc-hero">
-      <div className="zc-hero-icon">{current.condition_icon}</div>
+      <div className="zc-hero-icon"><ConditionIcon condition={current.condition} size="4.5rem" /></div>
       <div className="zc-hero-temp">
         {Math.round(current.temp)}<span className="zc-unit">°</span>
       </div>
@@ -293,7 +310,7 @@ function HourlyForecast({ hourly }) {
         {hourly.slice(0, 24).map((h, i) => (
           <div key={h.time} className={`zc-hourly-card ${i === 0 ? 'zc-now' : ''}`}>
             <div className="zc-hourly-time">{i === 0 ? '지금' : `${h.hour}시`}</div>
-            <div className="zc-hourly-icon">{h.condition_icon}</div>
+            <div className="zc-hourly-icon"><ConditionIcon condition={h.condition} size="1.5rem" /></div>
             <div className="zc-hourly-temp">{Math.round(h.temp)}°</div>
             {h.precipitation_prob > 0 && (
               <div className="zc-hourly-precip"><i className="fas fa-tint" style={{ marginRight: '2px' }} />{h.precipitation_prob}%</div>
@@ -326,7 +343,7 @@ function DailyForecast({ daily, onSelectDay }) {
           return (
             <div key={d.date} className="zc-daily-row" onClick={() => onSelectDay(d)}>
               <div className="zc-daily-day">{i === 0 ? '오늘' : d.day_of_week}</div>
-              <div className="zc-daily-icon">{d.condition_icon}</div>
+              <div className="zc-daily-icon"><ConditionIcon condition={d.condition} size="1.3rem" /></div>
               <div className="zc-daily-temp-bar">
                 <span className="zc-daily-temp-min">{Math.round(d.temp_min)}°</span>
                 <div className="zc-daily-bar-track">
@@ -372,7 +389,7 @@ function SourceVotes({ votes, title }) {
             </div>
             <div className="zc-vote-source">{v.name}</div>
             <div className="zc-vote-condition">
-              <span>{v.condition_icon}</span>
+              <span><ConditionIcon condition={v.condition} /></span>
               <span>{v.condition_label}</span>
             </div>
             <span className={`zc-vote-tag ${v.agreed ? 'zc-majority' : 'zc-minority'}`}>
@@ -396,7 +413,7 @@ function DayDetailModal({ day, onClose }) {
           {day.date} ({day.day_of_week}) 상세
         </div>
         <div style={{ textAlign: 'center', padding: '16px 0' }}>
-          <div style={{ fontSize: '3rem' }}>{day.condition_icon}</div>
+          <div style={{ fontSize: '3rem' }}><ConditionIcon condition={day.condition} size="3rem" /></div>
           <div style={{ fontSize: '1.2rem', fontWeight: 600, marginTop: '8px', color: '#f1f5f9' }}>
             {day.condition_label}
           </div>
