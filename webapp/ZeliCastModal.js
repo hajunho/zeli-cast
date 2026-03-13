@@ -344,7 +344,11 @@ function DailyForecast({ daily, onSelectDay }) {
             <div key={d.date} className="zc-daily-row" onClick={() => onSelectDay(d)}>
               <div className="zc-daily-day">{i === 0 ? '오늘' : d.day_of_week}</div>
               <div className="zc-daily-icon"><ConditionIcon condition={d.condition} size="1.3rem" /></div>
-              <div className="zc-daily-temp-bar">
+              <div
+                className="zc-daily-temp-bar zc-tooltip-wrap"
+                data-tooltip={`최저 ${Math.round(d.temp_min)}° / 최고 ${Math.round(d.temp_max)}° (일교차 ${Math.round(d.temp_max - d.temp_min)}°)`}
+                title={`최저 ${Math.round(d.temp_min)}° / 최고 ${Math.round(d.temp_max)}° (일교차 ${Math.round(d.temp_max - d.temp_min)}°)`}
+              >
                 <span className="zc-daily-temp-min">{Math.round(d.temp_min)}°</span>
                 <div className="zc-daily-bar-track">
                   <div
