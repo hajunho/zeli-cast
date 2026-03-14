@@ -334,7 +334,7 @@ function DailyForecast({ daily, onSelectDay }) {
     <div className="zc-section">
       <div className="zc-section-header">
         <span className="zc-section-title"><i className="far fa-calendar-alt" style={{ marginRight: '6px' }} />주간 예보</span>
-        <span className="zc-section-subtitle">7일</span>
+        <span className="zc-section-subtitle">{daily.length}일</span>
       </div>
       <div className="zc-daily-list">
         {daily.map((d, i) => {
@@ -342,7 +342,7 @@ function DailyForecast({ daily, onSelectDay }) {
           const barWidth = ((d.temp_max - d.temp_min) / tempRange) * 100;
           return (
             <div key={d.date} className="zc-daily-row" onClick={() => onSelectDay(d)}>
-              <div className="zc-daily-day">{i === 0 ? '오늘' : d.day_of_week}</div>
+              <div className="zc-daily-day">{d.day_of_week}</div>
               <div className="zc-daily-icon"><ConditionIcon condition={d.condition} size="1.3rem" /></div>
               <div
                 className="zc-daily-temp-bar zc-tooltip-wrap"
