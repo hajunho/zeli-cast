@@ -126,12 +126,12 @@ function buildDailyConsensus(sources) {
     dayList.forEach(d => datesSet.add(d.date));
   });
 
-  // 오늘 날짜 제외 — 오늘 날씨는 current 섹션에서 이미 표시됨
-  // daily의 오늘 데이터는 전일 요약(최저/최고)이라 current 스냅샷과 불일치할 수 있음
+  // 오늘 및 과거 날짜 제외 — 오늘 날씨는 current 섹션에서 이미 표시됨
+  // daily에 어제 이전 데이터가 포함될 수 있으므로 미래 날짜만 필터링
   const todayStr = new Date(new Date().getTime() + 9 * 60 * 60 * 1000)
     .toISOString().split('T')[0]; // KST 기준 오늘 날짜
   const sortedDates = Array.from(datesSet)
-    .filter(d => d !== todayStr)
+    .filter(d => d > todayStr)
     .sort()
     .slice(0, 7);
 
