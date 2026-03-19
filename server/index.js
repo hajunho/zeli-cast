@@ -4,6 +4,7 @@ import cors from 'cors';
 import { fetchAllForecasts } from './services/aggregator.js';
 import { getConsensus } from './services/consensus.js';
 import { getCached, setCache } from './services/cache.js';
+import { fetchNews } from './services/newsService.js';
 
 const app = express();
 const PORT = 5171;
@@ -85,6 +86,23 @@ app.get('/api/cast/weather/sources', async (req, res) => {
   } catch (err) {
     console.error('Sources API Error:', err);
     res.status(500).json({ error: 'Failed to fetch sources', details: err.message });
+  }
+});
+
+/**
+ * GET /api/cast/news?q=검색어
+ * Returns breaking news from SerpAPI Google News
+ * No query = Korean headline news
+ */
+app.get('/api/cast/news', async (req, res) => {
+  try {
+    const { q } = req.query;
+    console.log(`  📰 뉴스 요청: ${q || '헤드라인'}`);
+    const result = await fetchNews(q || null);
+    res.json(result);
+  } catch (err) {
+    console.error('❌ News API Error:', err);
+    res.status(500).json({ error: 'Failed to fetch news', details: err.message });
   }
 });
 
