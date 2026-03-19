@@ -188,9 +188,6 @@ export default function ZeliCastModal({ isOpen, onClose }) {
               <div className="zc-fade-in zc-fade-in-delay-4">
                 <SourceVotes votes={weather.current?.votes || []} title="현재 날씨 투표 현황" />
               </div>
-              <div className="zc-fade-in zc-fade-in-delay-5">
-                <BreakingNews articles={news} loading={newsLoading} />
-              </div>
               <ZCFooter weather={weather} />
             </>
           )}
@@ -530,82 +527,6 @@ function ErrorState({ message, onRetry }) {
   );
 }
 
-function BreakingNews({ articles, loading }) {
-  const scrollRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragState = useRef({ startX: 0, scrollLeft: 0 });
-
-  if (loading) {
-    return (
-      <div className="zc-section">
-        <div className="zc-section-header">
-          <span className="zc-section-title"><i className="fas fa-newspaper" style={{ marginRight: '6px' }} />뉴스 속보</span>
-        </div>
-        <div className="zc-news-loading">
-          <div className="zc-loading-spinner" style={{ width: '24px', height: '24px', borderWidth: '2px' }} />
-          <span>뉴스를 불러오는 중...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!articles || articles.length === 0) return null;
-
-  const handleMouseDown = (e) => {
-    setIsDragging(true);
-    dragState.current.startX = e.pageX - scrollRef.current.offsetLeft;
-    dragState.current.scrollLeft = scrollRef.current.scrollLeft;
-  };
-  const handleMouseMove = (e) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    const x = e.pageX - scrollRef.current.offsetLeft;
-    const walk = (x - dragState.current.startX) * 1.5;
-    scrollRef.current.scrollLeft = dragState.current.scrollLeft - walk;
-  };
-  const handleMouseUp = () => setIsDragging(false);
-
-  return (
-    <div className="zc-section">
-      <div className="zc-section-header">
-        <span className="zc-section-title"><i className="fas fa-newspaper" style={{ marginRight: '6px' }} />뉴스 속보</span>
-        <span className="zc-section-subtitle">{articles.length}건</span>
-      </div>
-      <div
-        className="zc-news-scroll"
-        ref={scrollRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
-        {articles.map((article, i) => (
-          <a
-            key={i}
-            className="zc-news-card"
-            href={article.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => { if (isDragging) e.preventDefault(); }}
-          >
-            {article.thumbnail && (
-              <div className="zc-news-thumb">
-                <img src={article.thumbnail} alt="" loading="lazy" />
-              </div>
-            )}
-            <div className="zc-news-body">
-              <div className="zc-news-title">{article.title}</div>
-              <div className="zc-news-meta">
-                {article.source && <span className="zc-news-source">{article.source}</span>}
-                {article.date && <span className="zc-news-date">{article.date}</span>}
-              </div>
-            </div>
-          </a>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function ZCFooter({ weather }) {
   return (

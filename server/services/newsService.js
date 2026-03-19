@@ -53,16 +53,40 @@ export async function fetchNews(query = null) {
     const data = await res.json();
 
     // news_results에서 기사 추출
+    // Google News 헤드라인은 stories[] 묶음으로 올 수 있음 → 개별 기사로 풀어냄
     const rawArticles = data.news_results || [];
-    const articles = rawArticles.slice(0, 10).map(article => ({
-      title: article.title || '',
-      link: article.link || '',
-      source: article.source?.name || article.source || '',
-      date: article.date || '',
-      snippet: article.snippet || '',
-      thumbnail: article.thumbnail || null,
-      position: article.position || 0,
-    }));
+    const flattened = [];
+
+    for (const item of rawArticles) {
+      if (item.link && item.title) {
+        // 직접 링크가 있는 일반 기사
+        flattened.push({
+          title: item.title,
+          link: item.link,
+          source: item.source?.name || item.source || '',
+          date: item.date || '',
+          snippet: item.snippet || '',
+          thumbnail: item.thumbnail || null,
+        });
+      }
+      // stories 묶음 안의 개별 기사들도 추출
+      if (item.stories && Array.isArray(item.stories)) {
+        for (const sub of item.stories) {
+          if (sub.title && sub.link) {
+            flattened.push({
+              title: sub.title,
+              link: sub.link,
+              source: sub.source?.name || sub.source || '',
+              date: sub.date || item.date || '',
+              snippet: sub.snippet || '',
+              thumbnail: sub.thumbnail || item.thumbnail || null,
+            });
+          }
+        }
+      }
+    }
+
+    const articles = flattened.slice(0, 15);
 
     // 캐시 저장
     newsCache = { data: articles, key: cacheKey, timestamp: now };
