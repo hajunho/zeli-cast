@@ -335,11 +335,24 @@
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 8px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-.zc-hourly-scroll::-webkit-scrollbar { display: none; }
+.zc-hourly-scroll:active { cursor: grabbing; }
+
+.zc-hourly-scroll::-webkit-scrollbar { height: 4px; }
+.zc-hourly-scroll::-webkit-scrollbar-track { background: transparent; }
+.zc-hourly-scroll::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.3);
+  border-radius: 2px;
+}
+.zc-hourly-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.5);
+}
 
 .zc-hourly-card {
   flex: 0 0 auto;

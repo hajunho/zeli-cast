@@ -88,7 +88,13 @@ function buildHourlyConsensus(sources) {
     });
   });
 
-  const sortedKeys = Object.keys(hourMap).sort().slice(0, 24);
+  // KST 현재 시각 기준으로 과거 데이터 제외 — "지금" 이후 시간대만 반환
+  const nowKST = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  const currentHourKey = nowKST.toISOString().slice(0, 13); // "YYYY-MM-DDTHH"
+  const sortedKeys = Object.keys(hourMap)
+    .filter(key => key >= currentHourKey)
+    .sort()
+    .slice(0, 24);
 
   return sortedKeys.map(key => {
     const dataForHour = hourMap[key];

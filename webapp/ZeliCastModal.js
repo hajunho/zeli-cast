@@ -2,7 +2,7 @@
  * ZeliCastModal — 합의 기반 날씨 예보 모달
  * 5개 기상 API 합의 결과를 zeliai 스타일로 표시
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './ZeliCast.css';
 
 const API_BASE = '/api/cast';
@@ -299,15 +299,50 @@ function StatsRow({ current }) {
 }
 
 function HourlyForecast({ hourly }) {
+  const scrollRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragState = useRef({ startX: 0, scrollLeft: 0 });
+
   if (!hourly || hourly.length === 0) return null;
+
+  // 현재 KST 시각 기준으로 이미 지난 시간대 필터링 (프론트엔드 이중 안전장치)
+  const now = new Date();
+  const kstOffsetMs = 9 * 60 * 60 * 1000 + now.getTimezoneOffset() * 60 * 1000;
+  const kstNow = new Date(now.getTime() + kstOffsetMs);
+  const currentHourKey = kstNow.toISOString().slice(0, 13); // "YYYY-MM-DDTHH"
+  const filtered = hourly.filter(h => h.time >= currentHourKey);
+  const displayHourly = filtered.length > 0 ? filtered.slice(0, 24) : hourly.slice(0, 24);
+
+  // 드래그 스크롤 핸들러 (데스크탑 지원)
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    dragState.current.startX = e.pageX - scrollRef.current.offsetLeft;
+    dragState.current.scrollLeft = scrollRef.current.scrollLeft;
+  };
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - dragState.current.startX) * 1.5;
+    scrollRef.current.scrollLeft = dragState.current.scrollLeft - walk;
+  };
+  const handleMouseUp = () => setIsDragging(false);
+
   return (
     <div className="zc-section">
       <div className="zc-section-header">
         <span className="zc-section-title"><i className="far fa-clock" style={{ marginRight: '6px' }} />시간별 예보</span>
         <span className="zc-section-subtitle">24시간</span>
       </div>
-      <div className="zc-hourly-scroll">
-        {hourly.slice(0, 24).map((h, i) => (
+      <div
+        className="zc-hourly-scroll"
+        ref={scrollRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+      >
+        {displayHourly.map((h, i) => (
           <div key={h.time} className={`zc-hourly-card ${i === 0 ? 'zc-now' : ''}`}>
             <div className="zc-hourly-time">{i === 0 ? '지금' : `${h.hour}시`}</div>
             <div className="zc-hourly-icon"><ConditionIcon condition={h.condition} size="1.5rem" /></div>
