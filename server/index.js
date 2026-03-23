@@ -5,6 +5,7 @@ import { fetchAllForecasts } from './services/aggregator.js';
 import { getConsensus } from './services/consensus.js';
 import { getCached, setCache } from './services/cache.js';
 import { fetchNews } from './services/newsService.js';
+import { scrapeArticle } from './services/articleScraper.js';
 
 const app = express();
 const PORT = 5171;
@@ -103,6 +104,25 @@ app.get('/api/cast/news', async (req, res) => {
   } catch (err) {
     console.error('❌ News API Error:', err);
     res.status(500).json({ error: 'Failed to fetch news', details: err.message });
+  }
+});
+
+/**
+ * GET /api/cast/news/article?url=<encoded_url>
+ * Scrapes full article text from a news URL
+ */
+app.get('/api/cast/news/article', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) {
+      return res.status(400).json({ error: 'url parameter is required' });
+    }
+    console.log(`  📄 기사 본문 요청: ${url.substring(0, 60)}...`);
+    const result = await scrapeArticle(url);
+    res.json(result);
+  } catch (err) {
+    console.error('❌ Article Scrape Error:', err);
+    res.status(500).json({ error: 'Failed to scrape article', details: err.message });
   }
 });
 
