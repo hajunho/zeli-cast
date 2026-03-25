@@ -6,6 +6,8 @@ import { getConsensus } from './services/consensus.js';
 import { getCached, setCache } from './services/cache.js';
 import { fetchNews } from './services/newsService.js';
 import { scrapeArticle } from './services/articleScraper.js';
+import { fetchStockData } from './services/stockService.js';
+import { fetchNearbyRestaurants } from './services/placeService.js';
 
 const app = express();
 const PORT = 5171;
@@ -123,6 +125,40 @@ app.get('/api/cast/news/article', async (req, res) => {
   } catch (err) {
     console.error('❌ Article Scrape Error:', err);
     res.status(500).json({ error: 'Failed to scrape article', details: err.message });
+  }
+});
+
+/**
+ * GET /api/cast/stock
+ * Returns KOSPI/KOSDAQ real-time data from SerpAPI
+ */
+app.get('/api/cast/stock', async (req, res) => {
+  try {
+    console.log('  📈 코스피 데이터 요청');
+    const result = await fetchStockData();
+    res.json(result);
+  } catch (err) {
+    console.error('❌ Stock API Error:', err);
+    res.status(500).json({ error: 'Failed to fetch stock data', details: err.message });
+  }
+});
+
+/**
+ * GET /api/cast/places?lat=37.5113&lon=127.0980&q=맛집
+ * Returns nearby restaurant data from SerpAPI Google Maps
+ */
+app.get('/api/cast/places', async (req, res) => {
+  try {
+    const { lat, lon, q } = req.query;
+    const latitude = parseFloat(lat) || 37.5113;
+    const longitude = parseFloat(lon) || 127.0980;
+    const query = q || '맛집';
+    console.log(`  🍔 맛집 요청: ${query} (${latitude}, ${longitude})`);
+    const result = await fetchNearbyRestaurants(latitude, longitude, query);
+    res.json(result);
+  } catch (err) {
+    console.error('❌ Places API Error:', err);
+    res.status(500).json({ error: 'Failed to fetch places', details: err.message });
   }
 });
 
