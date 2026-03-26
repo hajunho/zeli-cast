@@ -150,10 +150,11 @@ app.get('/api/cast/stock', async (req, res) => {
 app.get('/api/cast/places', async (req, res) => {
   try {
     const { lat, lon, q } = req.query;
-    const latitude = parseFloat(lat) || 37.5113;
-    const longitude = parseFloat(lon) || 127.0980;
+    // lat/lon이 없거나 무효한 경우 null 전달하여 전역 검색 허용 (프롬프트 내 지명 인식용)
+    const latitude = (lat && !isNaN(parseFloat(lat))) ? parseFloat(lat) : null;
+    const longitude = (lon && !isNaN(parseFloat(lon))) ? parseFloat(lon) : null;
     const query = q || '맛집';
-    console.log(`  🍔 맛집 요청: ${query} (${latitude}, ${longitude})`);
+    console.log(`  🍔 맛집 요청: ${query} (lat=${latitude}, lon=${longitude})`);
     const result = await fetchNearbyRestaurants(latitude, longitude, query);
     res.json(result);
   } catch (err) {

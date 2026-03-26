@@ -36,7 +36,8 @@ function extractArticleText(html) {
   // article이 없으면 main 콘텐츠 클래스 찾기
   if (!articleContent) {
     const contentPatterns = [
-      /<div[^>]*class="[^"]*(?:article[_-]?(?:body|content|text)|news[_-]?(?:body|content|text)|story[_-]?(?:body|content|text)|post[_-]?(?:body|content|text)|entry[_-]?(?:body|content|text)|content[_-]?(?:body|article|text))[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+      /<div[^>]*id="[^"]*(?:dic_area|articleBody|article_body|articeBody|news_body|newsEndContents)[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
+      /<div[^>]*class="[^"]*(?:article_view|article_body|news_bm|news_cnt|article[_-]?(?:body|content|text)|news[_-]?(?:body|content|text)|story[_-]?(?:body|content|text)|post[_-]?(?:body|content|text)|entry[_-]?(?:body|content|text)|content[_-]?(?:body|article|text))[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
       /<div[^>]*id="[^"]*(?:article[_-]?(?:body|content|text)|news[_-]?(?:body|content|text)|story[_-]?(?:body|content|text)|content[_-]?(?:body|article))[^"]*"[^>]*>([\s\S]*?)<\/div>/i,
       /<section[^>]*class="[^"]*(?:article|content|story|post)[^"]*"[^>]*>([\s\S]*?)<\/section>/i,
     ];

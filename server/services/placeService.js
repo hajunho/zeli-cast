@@ -16,8 +16,8 @@ let placeCache = { data: null, timestamp: 0, key: null };
  * @param {string} query - 검색어 (기본: '맛집')
  * @returns {Promise<{places: Array, cached: boolean, timestamp: string}>}
  */
-export async function fetchNearbyRestaurants(lat = 37.5113, lon = 127.0980, query = '맛집') {
-  const cacheKey = `places_${lat.toFixed(2)}_${lon.toFixed(2)}_${query}`;
+export async function fetchNearbyRestaurants(lat = null, lon = null, query = '맛집') {
+  const cacheKey = `places_${lat ? lat.toFixed(2) : 'any'}_${lon ? lon.toFixed(2) : 'any'}_${query}`;
   const now = Date.now();
 
   // 캐시 확인
@@ -37,10 +37,15 @@ export async function fetchNearbyRestaurants(lat = 37.5113, lon = 127.0980, quer
       api_key: apiKey,
       engine: 'google_maps',
       q: `${query}`,
-      ll: `@${lat},${lon},15z`,
       hl: 'ko',
       type: 'search',
     });
+
+    if (lat && lon && !isNaN(lat) && !isNaN(lon)) {
+        params.append('ll', `@${lat},${lon},15z`);
+    } else {
+        console.log(`  🍔 [placeService] No valid GPS coordinates, searching by query: ${query}`);
+    }
 
     console.log(`  🍔 SerpAPI 맛집 요청: ${query} (${lat}, ${lon})`);
     const res = await fetch(`${SERPAPI_BASE}?${params.toString()}`);
