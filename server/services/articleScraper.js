@@ -101,7 +101,7 @@ function extractArticleText(html) {
     .filter(p => p.length > 15) // 최소 15자 이상
     .filter(p => {
       const lower = p.toLowerCase();
-      // 광고/저작권/UI 요소 필터링
+      // 광고/저작권/UI 요소/기사 하단 쓰레기 텍스트 필터링
       return !lower.includes('copyright') &&
              !lower.includes('all rights reserved') &&
              !lower.includes('무단전재') &&
@@ -114,6 +114,11 @@ function extractArticleText(html) {
              !lower.includes('기자 이메일') &&
              !lower.includes('카카오톡') &&
              !lower.includes('페이스북') &&
+             !lower.includes('음성재생') &&
+             !lower.includes('데이터 요금') &&
+             !lower.includes('번역beta') &&
+             !lower.includes('translated by') &&
+             !lower.includes('now in translation') &&
              !lower.startsWith('ad') &&
              !lower.startsWith('관련기사') &&
              !lower.startsWith('인기기사');

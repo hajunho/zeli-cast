@@ -54,12 +54,21 @@ export async function fetchNews(query = null) {
 
     // news_results에서 기사 추출
     // Google News 헤드라인은 stories[] 묶음으로 올 수 있음 → 개별 기사로 풀어냄
+    // ── 💡 Blocked Domains: matn olish imkoni bo'lmagan saytlar (Blacklist) ──
+    const BLOCKED_DOMAINS = [
+      'donga.com',    // DongA — matn chiqmaydi
+      'chosun.com',   // Chosun — matn chiqmaydi
+      'munhwa.com',   // Munhwa — matn chiqmaydi
+      'nate.com',     // Nate — matn chiqmaydi
+    ];
+
     const rawArticles = data.news_results || [];
     const flattened = [];
 
+    const isBlocked = (url) => BLOCKED_DOMAINS.some(d => url.includes(d));
+
     for (const item of rawArticles) {
-      if (item.link && item.title) {
-        // 직접 링크가 있는 일반 기사
+      if (item.link && item.title && !isBlocked(item.link)) {
         flattened.push({
           title: item.title,
           link: item.link,
@@ -72,7 +81,7 @@ export async function fetchNews(query = null) {
       // stories 묶음 안의 개별 기사들도 추출
       if (item.stories && Array.isArray(item.stories)) {
         for (const sub of item.stories) {
-          if (sub.title && sub.link) {
+          if (sub.title && sub.link && !isBlocked(sub.link)) {
             flattened.push({
               title: sub.title,
               link: sub.link,
@@ -86,7 +95,8 @@ export async function fetchNews(query = null) {
       }
     }
 
-    const articles = flattened.slice(0, 15);
+    // 결과 개수 제한 40개
+    const articles = flattened.slice(0, 40);
 
     // 캐시 저장
     newsCache = { data: articles, key: cacheKey, timestamp: now };
