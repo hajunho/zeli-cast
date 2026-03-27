@@ -60,6 +60,7 @@ export async function fetchNews(query = null) {
       'chosun.com',   // Chosun — matn chiqmaydi
       'munhwa.com',   // Munhwa — matn chiqmaydi
       'nate.com',     // Nate — matn chiqmaydi
+      'kpanews.co.kr', // Yaksa Gongron — matn chiqmaydi
     ];
 
     const rawArticles = data.news_results || [];
