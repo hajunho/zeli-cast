@@ -61,6 +61,7 @@ export async function fetchNews(query = null) {
       'munhwa.com',   // Munhwa — matn chiqmaydi
       'nate.com',     // Nate — matn chiqmaydi
       'kpanews.co.kr', // Yaksa Gongron — matn chiqmaydi
+      'korea.kr',     // Korea Policy Briefing — matn chiqmaydi
     ];
 
     const rawArticles = data.news_results || [];
