@@ -62,15 +62,29 @@ export async function fetchNews(query = null) {
       'nate.com',     // Nate — matn chiqmaydi
       'kpanews.co.kr', // Yaksa Gongron — matn chiqmaydi
       'korea.kr',     // Korea Policy Briefing — matn chiqmaydi
+      'kgib.co.kr',   // 경기일보 (kgib.co.kr) — matn chiqmaydi
+      'kyeonggi.com', // 경기일보 (kyeonggi.com) — matn chiqmaydi
+      'sedaily.com',  // 서울경제 (sedaily.com) — matn chiqmaydi
+      'newsis.com',   // 뉴시스 (newsis.com) — matn chiqmaydi
+    ];
+    const BLOCKED_SOURCES = [
+      '경기일보',
+      '서울경제신문',
+      '뉴시스',
     ];
 
     const rawArticles = data.news_results || [];
     const flattened = [];
 
-    const isBlocked = (url) => BLOCKED_DOMAINS.some(d => url.includes(d));
+    const isBlocked = (url, sourceName = '') => {
+      const urlBlocked = BLOCKED_DOMAINS.some(d => url.includes(d));
+      const sourceBlocked = BLOCKED_SOURCES.includes(sourceName);
+      return urlBlocked || sourceBlocked;
+    };
 
     for (const item of rawArticles) {
-      if (item.link && item.title && !isBlocked(item.link)) {
+      const sourceName = item.source?.name || item.source || '';
+      if (item.link && item.title && !isBlocked(item.link, sourceName)) {
         flattened.push({
           title: item.title,
           link: item.link,
@@ -83,11 +97,12 @@ export async function fetchNews(query = null) {
       // stories 묶음 안의 개별 기사들도 추출
       if (item.stories && Array.isArray(item.stories)) {
         for (const sub of item.stories) {
-          if (sub.title && sub.link && !isBlocked(sub.link)) {
+          const subSourceName = sub.source?.name || sub.source || '';
+          if (sub.title && sub.link && !isBlocked(sub.link, subSourceName)) {
             flattened.push({
               title: sub.title,
               link: sub.link,
-              source: sub.source?.name || sub.source || '',
+              source: subSourceName,
               date: sub.date || item.date || '',
               snippet: sub.snippet || '',
               thumbnail: sub.thumbnail || item.thumbnail || null,
