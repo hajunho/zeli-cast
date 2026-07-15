@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import KoreaMapModal from './KoreaMap'
 
-const API_BASE = '/api';
+const API_BASE = '/api/cast';
 
 // Default location: Seoul
 const DEFAULT_LOCATION = { lat: 37.5665, lon: 126.9780, name: '서울특별시', detail: '중구' };

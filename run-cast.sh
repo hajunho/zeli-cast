@@ -12,7 +12,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-BACKEND_CAST_DIR="$SCRIPT_DIR/backend_cast"
+SERVER_DIR="$SCRIPT_DIR/server"
 
 echo -e "${BLUE}============================================================${NC}"
 echo -e "${BLUE}   ZeliCast Weather Server (Express)                        ${NC}"
@@ -28,7 +28,7 @@ fi
 
 echo -e "${GREEN}[OK] Node.js $(node --version)${NC}"
 
-cd "$BACKEND_CAST_DIR"
+cd "$SERVER_DIR"
 
 # Install dependencies if needed
 if [ ! -d "node_modules" ] || [ ! -d "node_modules/express" ]; then

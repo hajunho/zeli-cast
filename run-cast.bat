@@ -4,7 +4,7 @@ echo   ZeliCast Weather Server (Express)
 echo ====================================
 echo.
 
-cd /d "%~dp0backend_cast"
+cd /d "%~dp0server"
 
 echo [1/2] Checking Node.js...
 where node >nul 2>nul
@@ -23,7 +23,7 @@ echo [1-1/2] Checking dependencies...
 :: Check if node_modules exists
 if exist "node_modules\express" (
     echo   Dependencies already installed. Skipping npm install.
-    echo   [To force reinstall, delete backend_cast\node_modules]
+    echo   [To force reinstall, delete server\node_modules]
 ) else (
     echo   Installing dependencies...
     npm install

@@ -54,7 +54,7 @@ done
 
 # 5. 서버 시작
 echo ""
-echo -e "${GREEN}[START]${NC} Backend : http://localhost:5171/api/weather"
+echo -e "${GREEN}[START]${NC} Backend : http://localhost:5171/api/cast/weather"
 echo -e "${GREEN}[START]${NC} Frontend: http://localhost:5172"
 echo "  Press Ctrl+C to stop"
 echo ""
