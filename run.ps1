@@ -24,8 +24,8 @@ if (-not (Test-Path (Join-Path $PSScriptRoot "server\node_modules"))) {
 }
 
 if (-not (Test-Path (Join-Path $PSScriptRoot "server\.env"))) {
-    Write-Host "Tip: no server\.env found - running with the free keyless weather source only." -ForegroundColor Yellow
-    Write-Host "     Copy server\.env.example to server\.env and add keys to enable all 5 sources."
+    Write-Host "Tip: using the shared demo keys (server.env.demo) - see README for fair use." -ForegroundColor Yellow
+    Write-Host "     Copy server.env.example to server.env to use your own keys instead."
 }
 
 Write-Host "Starting backend (5171) + frontend (5172)... browser opens in a moment (Ctrl+C to stop)" -ForegroundColor Cyan
