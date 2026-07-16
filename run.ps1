@@ -24,7 +24,7 @@ if (-not (Test-Path (Join-Path $PSScriptRoot "server\node_modules"))) {
 }
 
 if (-not (Test-Path (Join-Path $PSScriptRoot "server\.env"))) {
-    Write-Host "Tip: using the shared demo keys (server.env.demo) - see README for fair use." -ForegroundColor Yellow
+    Write-Host "Tip: using the shared demo keys (server\.env.demo) - see README for fair use." -ForegroundColor Yellow
     Write-Host "     Copy server.env.example to server.env to use your own keys instead."
 }
 
