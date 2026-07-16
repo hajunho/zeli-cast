@@ -36,11 +36,17 @@ chmod +x run.sh && ./run.sh
 
 Then open **http://localhost:5172** (the backend runs on port 5171).
 
-### 🔑 API keys (optional!)
+### 🔑 API keys — it just works
 
-The app **works out of the box with zero keys** — the keyless [Open-Meteo](https://open-meteo.com) source is always available, and any source without a key is skipped automatically.
+**All 5 weather sources work immediately after cloning.** The repo ships with **shared demo keys** in [`server/.env.demo`](server/.env.demo) — the maintainer's own free-tier keys, shared so you can try the full consensus experience without signing up for anything.
 
-To light up all 5 weather sources plus news/stock/places, copy the example file and add your own free keys:
+> **📢 Notice about the shared demo keys**
+>
+> - They are free-tier keys with **shared quotas** (e.g. 기상청 KMA: 10,000 calls/day for *everyone combined*). Please use them for a quick try-out only.
+> - They may be **rotated or revoked at any time**. If a source suddenly shows as skipped, this is why — switch to your own keys.
+> - `SERPAPI_KEY` (news/stocks/places) is **not** shared: its free tier is ~100 searches/month and a public key would be exhausted within hours. Grab your own at [serpapi.com](https://serpapi.com).
+
+For regular use, get your own free keys (each takes ~2 minutes) — copy the example file and fill it in; your `server/.env` always overrides the demo keys:
 
 ```bash
 cp server/.env.example server/.env   # then edit server/.env

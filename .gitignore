@@ -26,3 +26,6 @@ dist-ssr
 # Environment secrets - never commit
 .env
 server/.env
+
+# local get.ps1 test clones
+zeliai_cast/

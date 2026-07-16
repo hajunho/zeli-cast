@@ -22,8 +22,8 @@ if (Test-Path $dir) {
 
 Set-Location $dir
 Write-Host ""
-Write-Host "Tip: the app runs with zero API keys (Open-Meteo is keyless)." -ForegroundColor Green
-Write-Host "     To enable all 5 weather sources + news/stock/places, copy" -ForegroundColor Green
+Write-Host "Tip: shared demo keys are included - all 5 weather sources work instantly." -ForegroundColor Green
+Write-Host "     For regular use (and news/stock/places), copy" -ForegroundColor Green
 Write-Host "     server\.env.example to server\.env and add your free keys." -ForegroundColor Green
 Write-Host ""
 powershell -ExecutionPolicy Bypass -File .\run.ps1
