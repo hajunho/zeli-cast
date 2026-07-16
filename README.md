@@ -10,7 +10,15 @@ Built with React + Vite on the front and a tiny Express server on the back. **No
 
 Just **[Node.js](https://nodejs.org)** (free LTS version). Check with `node --version`.
 
-### Windows
+### Windows — one command
+
+Paste this into PowerShell — it gets the source and starts the app (works even without git installed):
+
+```powershell
+irm https://raw.githubusercontent.com/hajunho/zeliai_cast/master/get.ps1 | iex
+```
+
+Or the classic way:
 
 ```powershell
 git clone https://github.com/hajunho/zeliai_cast.git
