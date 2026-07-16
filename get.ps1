@@ -1,10 +1,10 @@
 # ZeliCast — one-command bootstrap for Windows PowerShell
 # Gets the source from GitHub and starts the app:
-#   irm https://raw.githubusercontent.com/hajunho/zeliai_cast/master/get.ps1 | iex
+#   irm https://raw.githubusercontent.com/hajunho/zeli-cast/master/get.ps1 | iex
 $ErrorActionPreference = "Stop"
 
-$repo = "hajunho/zeliai_cast"
-$dir = Join-Path (Get-Location) "zeliai_cast"
+$repo = "hajunho/zeli-cast"
+$dir = Join-Path (Get-Location) "zeli-cast"
 
 if (Test-Path $dir) {
     Write-Host "Folder .\zeliai_cast already exists - using it." -ForegroundColor Yellow
@@ -13,10 +13,10 @@ if (Test-Path $dir) {
     git clone "https://github.com/$repo.git" $dir
 } else {
     Write-Host "git not found - downloading ZIP instead..." -ForegroundColor Cyan
-    $zip = Join-Path $env:TEMP "zeliai_cast.zip"
+    $zip = Join-Path $env:TEMP "zeli-cast.zip"
     Invoke-WebRequest "https://github.com/$repo/archive/refs/heads/master.zip" -OutFile $zip
     Expand-Archive $zip -DestinationPath (Get-Location) -Force
-    Rename-Item (Join-Path (Get-Location) "zeliai_cast-master") $dir
+    Rename-Item (Join-Path (Get-Location) "zeli-cast-master") $dir
     Remove-Item $zip
 }
 

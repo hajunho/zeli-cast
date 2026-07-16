@@ -15,22 +15,22 @@ Just **[Node.js](https://nodejs.org)** (free LTS version). Check with `node --ve
 Paste this into PowerShell — it gets the source and starts the app (works even without git installed):
 
 ```powershell
-irm https://raw.githubusercontent.com/hajunho/zeliai_cast/master/get.ps1 | iex
+irm https://raw.githubusercontent.com/hajunho/zeli-cast/master/get.ps1 | iex
 ```
 
 Or the classic way:
 
 ```powershell
-git clone https://github.com/hajunho/zeliai_cast.git
-cd zeliai_cast
+git clone https://github.com/hajunho/zeli-cast.git
+cd zeli-cast
 powershell -ExecutionPolicy Bypass -File .\run.ps1
 ```
 
 ### macOS / Linux
 
 ```bash
-git clone https://github.com/hajunho/zeliai_cast.git
-cd zeliai_cast
+git clone https://github.com/hajunho/zeli-cast.git
+cd zeli-cast
 chmod +x run.sh && ./run.sh
 ```
 
