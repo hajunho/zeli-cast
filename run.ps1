@@ -1,4 +1,4 @@
-# ZeliCast — one-file launcher for Windows PowerShell
+# ZeliCast - one-file launcher for Windows PowerShell
 # Usage: powershell -ExecutionPolicy Bypass -File .\run.ps1
 $ErrorActionPreference = "Stop"
 Set-Location -Path $PSScriptRoot
@@ -24,7 +24,7 @@ if (-not (Test-Path (Join-Path $PSScriptRoot "server\node_modules"))) {
 }
 
 if (-not (Test-Path (Join-Path $PSScriptRoot "server\.env"))) {
-    Write-Host "Tip: no server\.env found — running with the free keyless weather source only." -ForegroundColor Yellow
+    Write-Host "Tip: no server\.env found - running with the free keyless weather source only." -ForegroundColor Yellow
     Write-Host "     Copy server\.env.example to server\.env and add keys to enable all 5 sources."
 }
 

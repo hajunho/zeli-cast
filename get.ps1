@@ -1,4 +1,4 @@
-# ZeliCast — one-command bootstrap for Windows PowerShell
+# ZeliCast - one-command bootstrap for Windows PowerShell
 # Gets the source from GitHub and starts the app:
 #   irm https://raw.githubusercontent.com/hajunho/zeli-cast/master/get.ps1 | iex
 $ErrorActionPreference = "Stop"
